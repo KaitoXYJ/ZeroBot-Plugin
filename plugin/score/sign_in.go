@@ -27,7 +27,8 @@ import (
 )
 
 const (
-	backgroundURL = "https://iw233.cn/api.php?sort=pc"
+	backgroundURL = "https://api.kaitomoe.org/scoreapi.php"
+//	backgroundURL = "https://iw233.cn/api.php?sort=pc"
 	referer       = "https://weibo.com/"
 	signinMax     = 1
 	// SCOREMAX 分数上限定为1200
