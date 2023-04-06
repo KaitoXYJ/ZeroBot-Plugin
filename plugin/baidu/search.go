@@ -26,7 +26,7 @@ type result struct {
 
 func init() { // 主函数
 	en := control.Register("baidu", &ctrl.Options[*zero.Ctx]{
-		DisableOnDefault: false,
+		DisableOnDefault: true,
 		Help: "百度百科\n" +
 			"- 百度/百科[关键字]",
 	})

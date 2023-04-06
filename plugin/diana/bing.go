@@ -13,7 +13,7 @@ import (
 )
 
 var engine = control.Register("diana", &ctrl.Options[*zero.Ctx]{
-	DisableOnDefault: false,
+	DisableOnDefault: true,
 	Brief:            "嘉然相关", // 也许使用常用功能当Brief更好
 	Help: "- 小作文\n" +
 		"- 发大病\n" +

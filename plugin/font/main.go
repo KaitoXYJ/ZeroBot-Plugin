@@ -25,7 +25,7 @@ func init() {
 	control.Register("font", &ctrl.Options[*zero.Ctx]{
 		DisableOnDefault: false,
 		Brief:            "渲染任意文字到图片",
-		Help:             "- (用[字体])渲染(抖动)文字xxx\n可选字体: [终末体|终末变体|紫罗兰体|樱酥体|Consolas体|粗苹方体|未来荧黑体|Gugi体|八丸体|Impact体|猫啃体|苹方体]",
+		Help:             "- (用[字体])渲染(抖动)文字xxx\n可选字体: [终末体|终末变体|紫罗兰体|樱酥体|Consolas体|粗苹方体|未来荧黑体|Gugi体|八丸体|Impact体|猫啃体|苹方体包图小白体]",
 	}).OnRegex(`^(用.+)?渲染(抖动)?文字([\s\S]+)$`).SetBlock(true).Limit(ctxext.LimitByUser).Handle(func(ctx *zero.Ctx) {
 		fnt := ctx.State["regex_matched"].([]string)[1]
 		txt := ctx.State["regex_matched"].([]string)[3]
@@ -50,6 +50,8 @@ func init() {
 			fnt = text.HachiMaruPopRegularFontFile
 		case "用Impact体":
 			fnt = text.ImpactFontFile
+		case "用包图小白体":
+			fnt = text.BaotuXiaobaiFontFile
 		case "用猫啃体":
 			fnt = text.MaokenFontFile
 		case "用苹方体":

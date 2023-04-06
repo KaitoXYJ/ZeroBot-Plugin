@@ -216,7 +216,7 @@ func drawScore17(a *scdata) (image.Image, error) {
 	// draw info(name, coin, etc)
 	hourWord := getHourWord(time.Now())
 	canvas.SetRGB255(0, 0, 0)
-	data, err := file.GetLazyData(text.MaokenFontFile, control.Md5File, true)
+	data, err := file.GetLazyData(text.GlowSansFontFile, control.Md5File, true)
 	if err != nil {
 		return nil, err
 	}
@@ -273,8 +273,9 @@ func drawScore17(a *scdata) (image.Image, error) {
 	return canvas.Image(), nil
 }
 
-func drawScore17b2(a *scdata) (img image.Image, err error) {
-	fontdata, err := file.GetLazyData(text.GlowSansFontFile, control.Md5File, false)
+func drawScore18(a *scdata) (img image.Image, err error) {
+	//fontdata, err := file.GetLazyData(text.GlowSansFontFile, control.Md5File, false)
+	fontdata, err := file.GetLazyData(text.BaotuXiaobaiFontFile, control.Md5File, false)
 	if err != nil {
 		return
 	}
@@ -284,27 +285,31 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 		return
 	}
 
+	var blurback image.Image
+
 	back, err := gg.LoadImage(a.picfile)
 	if err != nil {
 		return
 	}
-
+	var bwg sync.WaitGroup
+	bwg.Add(1)
+	go func() {
+		defer bwg.Done()
+		blurback = imaging.Blur(back, 20)
+	}()
 	bx, by := float64(back.Bounds().Dx()), float64(back.Bounds().Dy())
-
-	sc := 1280 / bx
-
+	sc := 1280 / float64(bx)
 	colors := gg.TakeColor(back, 3)
 
 	canvas := gg.NewContext(1280, 1280*int(by)/int(bx))
 
 	cw, ch := float64(canvas.W()), float64(canvas.H())
 
-	sch := ch * 6 / 10
+	_, sch := cw*6/10, ch*6/10
 
-	var blurback, scbackimg, backshadowimg, avatarimg, avatarbackimg, avatarshadowimg, whitetext, blacktext image.Image
+	var scbackimg, backshadowimg, avatarimg, avatarbackimg, avatarshadowimg, whitetext, blacktext image.Image
 	var wg sync.WaitGroup
-	wg.Add(8)
-
+	wg.Add(7)
 	go func() {
 		defer wg.Done()
 		scback := gg.NewContext(canvas.W(), canvas.H())
@@ -312,14 +317,8 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 		scback.DrawImageAnchored(back, canvas.W()/2, canvas.H()/2, 0.5, 0.5)
 		scback.Identity()
 
-		go func() {
-			defer wg.Done()
-			blurback = imaging.Blur(scback.Image(), 20)
-		}()
-
 		scbackimg = rendercard.Fillet(scback.Image(), 12)
 	}()
-
 	go func() {
 		defer wg.Done()
 		pureblack := gg.NewContext(canvas.W(), canvas.H())
@@ -333,11 +332,12 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 
 		backshadowimg = imaging.Blur(shadow.Image(), 8)
 	}()
-
-	aw, ah := (ch-sch)/2/2/2*3, (ch-sch)/2/2/2*3
-
+	var aw, ah float64
+	var awg sync.WaitGroup
+	awg.Add(1)
 	go func() {
 		defer wg.Done()
+		defer awg.Done()
 		avatar, _, err := image.Decode(bytes.NewReader(getAvatar))
 		if err != nil {
 			return
@@ -345,7 +345,9 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 
 		isc := (ch - sch) / 2 / 2 / 2 * 3 / float64(avatar.Bounds().Dy())
 
-		scavatar := gg.NewContext(int(aw), int(ah))
+		scavatar := gg.NewContext(int((ch-sch)/2/2/2*3), int((ch-sch)/2/2/2*3))
+
+		aw, ah = float64(scavatar.W()), float64(scavatar.H())
 
 		scavatar.ScaleAbout(isc, isc, aw/2, ah/2)
 		scavatar.DrawImageAnchored(avatar, scavatar.W()/2, scavatar.H()/2, 0.5, 0.5)
@@ -362,17 +364,20 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 
 	go func() {
 		defer wg.Done()
+		awg.Wait()
 		avatarshadowimg = imaging.Blur(customrectangle(cw, ch, aw, ah, namew, color.Black), 8)
 	}()
 
 	go func() {
 		defer wg.Done()
+		awg.Wait()
 		avatarbackimg = customrectangle(cw, ch, aw, ah, namew, colors[0])
 	}()
-
+	hktres, hktfrom := hitokoto()
 	go func() {
 		defer wg.Done()
-		whitetext, err = customtext(a, fontdata, cw, ch, aw, color.White)
+		awg.Wait()
+		whitetext, err = customtext(a, fontdata, cw, ch, aw, color.White, hktres, hktfrom)
 		if err != nil {
 			return
 		}
@@ -380,20 +385,27 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 
 	go func() {
 		defer wg.Done()
-		blacktext, err = customtext(a, fontdata, cw, ch, aw, color.Black)
+		awg.Wait()
+		blacktext, err = customtext(a, fontdata, cw, ch, aw, color.Black, hktres, hktfrom)
 		if err != nil {
 			return
 		}
 	}()
 
+	canvas.ScaleAbout(sc, sc, cw/2, ch/2)
+
+	bwg.Wait()
+
+	canvas.DrawImageAnchored(blurback, canvas.W()/2, canvas.H()/2, 0.5, 0.5)
+	canvas.Identity()
+	canvas.SetRGBA255(255, 255, 255, 140)
+	canvas.DrawRectangle(0, 0, float64(canvas.W()), float64(canvas.H()))
+	canvas.Fill()
 	wg.Wait()
 	if scbackimg == nil || backshadowimg == nil || avatarimg == nil || avatarbackimg == nil || avatarshadowimg == nil || whitetext == nil || blacktext == nil {
 		err = errors.New("图片渲染失败")
 		return
 	}
-
-	canvas.DrawImageAnchored(blurback, canvas.W()/2, canvas.H()/2, 0.5, 0.5)
-
 	canvas.DrawImage(backshadowimg, 0, 0)
 
 	canvas.ScaleAbout(0.6, 0.6, cw-cw/3, ch/2)
@@ -404,8 +416,15 @@ func drawScore17b2(a *scdata) (img image.Image, err error) {
 	canvas.DrawImage(avatarbackimg, 0, 0)
 	canvas.DrawImageAnchored(avatarimg, int((ch-sch)/2/2), int((ch-sch)/2/2), 0.5, 0.5)
 
-	canvas.DrawImage(blacktext, 2, 2)
-	canvas.DrawImage(whitetext, 0, 0)
+	//	canvas.DrawImage(blacktext, 2, 2)
+	//	canvas.DrawImage(blacktext, -2, 2)
+	//	canvas.DrawImage(blacktext, -2, -2)
+	//	canvas.DrawImage(blacktext, 2, -2)
+	//	canvas.DrawImage(blacktext, 1, 1)
+	//	canvas.DrawImage(blacktext, -1, 1)
+	//	canvas.DrawImage(blacktext, -1, -1)
+	//	canvas.DrawImage(blacktext, 1, -1)
+	canvas.DrawImage(blacktext, 0, 0)
 
 	img = canvas.Image()
 	return
@@ -424,7 +443,7 @@ func customrectangle(cw, ch, aw, ah, namew float64, rtgcolor color.Color) (img i
 	return
 }
 
-func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.Color) (img image.Image, err error) {
+func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.Color, hktres string, hktfrom string) (img image.Image, err error) {
 	canvas := gg.NewContext(int(cw), int(ch))
 	canvas.SetColor(textcolor)
 	scw, sch := cw*6/10, ch*6/10
@@ -437,7 +456,7 @@ func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.
 	if err != nil {
 		return
 	}
-	canvas.DrawStringAnchored(time.Now().Format("2006/01/02"), cw-cw/6, ch/2-sch/2-canvas.FontHeight(), 0.5, 0.5)
+	canvas.DrawStringAnchored(time.Now().Format("2006/01/02"), cw-cw/6, (ch-sch)/2/4*3, 0.5, 0.5)
 
 	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/2/2)
 	if err != nil {
@@ -451,15 +470,19 @@ func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.
 	}
 	nextLevelStyle := strconv.Itoa(a.level) + "/" + strconv.Itoa(nextrankScore)
 
-	canvas.DrawStringAnchored("Level "+strconv.Itoa(a.rank), cw/3*2-scw/2, ch/2+sch/2+canvas.FontHeight(), 0, 0.5)
-	canvas.DrawStringAnchored(nextLevelStyle, cw/3*2+scw/2, ch/2+sch/2+canvas.FontHeight(), 1, 0.5)
-
-	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/2/3)
+	canvas.DrawStringAnchored("Level "+strconv.Itoa(a.rank), cw/3*2-scw/2, ch-(ch-sch)/2/4*3, 0, 0.5)
+	canvas.DrawStringAnchored(nextLevelStyle, cw/3*2+scw/2, ch-(ch-sch)/2/4*3, 1, 0.5)
+	//一言
+	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/4)
 	if err != nil {
 		return
 	}
 
-	canvas.DrawStringAnchored("Create By ZeroBot-Plugin "+banner.Version, 0+4, ch, 0, -0.5)
+	canvas.DrawStringAnchored("今日一言:"+hktres, 0+4, ch-45, 0, -0.5)
+	canvas.DrawStringAnchored("--"+hktfrom, 0+4, ch, 0, -0.5)
+	//水印
+	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/2/3)
+	canvas.DrawStringAnchored("Created by ZeroBot-Plugin"+banner.Version, cw/2, 12, 0.5, 0.5)
 
 	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/5*3)
 	if err != nil {

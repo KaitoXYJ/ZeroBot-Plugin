@@ -19,7 +19,7 @@ import (
 
 func init() { // 插件主体
 	engine := control.Register("dress", &ctrl.Options[*zero.Ctx]{
-		DisableOnDefault: false,
+		DisableOnDefault: true,
 		Brief:            "女装",
 		Help: "女装\n" +
 			"- 女装\n" +

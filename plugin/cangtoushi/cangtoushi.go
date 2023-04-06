@@ -31,7 +31,7 @@ var (
 
 func init() {
 	engine := control.Register("cangtoushi", &ctrl.Options[*zero.Ctx]{
-		DisableOnDefault: false,
+		DisableOnDefault: true,
 		Brief:            "藏头诗, 藏尾诗",
 		Help:             "- 藏头诗[xxx]\n- 藏尾诗[xxx]",
 	})

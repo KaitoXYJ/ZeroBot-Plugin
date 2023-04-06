@@ -54,7 +54,7 @@ func init() {
 		panic(err)
 	}
 	control.Register("coser", &ctrl.Options[*zero.Ctx]{
-		DisableOnDefault: false,
+		DisableOnDefault: true,
 		Brief:            "三次元coser",
 		Help:             "- coser",
 	}).ApplySingle(ctxext.DefaultSingle).OnFullMatch("coser").SetBlock(true).Limit(ctxext.LimitByGroup).

@@ -30,10 +30,10 @@ func init() { // 插件主体
 			time.Sleep(time.Second * 1)
 			ctx.SendChain(message.Text(
 				[]string{
-					nickname + "在此，有何贵干~",
-					"(っ●ω●)っ在~",
-					"这里是" + nickname + "(っ●ω●)っ",
-					nickname + "不在呢~",
+					nickname + "在窥屏中~ |（￣▽￣）",
+					"嗯哼?",
+					"叫" + nickname + "有什么事捏😄",
+					"差不多得了😅",
 				}[rand.Intn(4)],
 			))
 		})
@@ -45,11 +45,11 @@ func init() { // 插件主体
 			case poke.Load(ctx.Event.GroupID).AcquireN(3):
 				// 5分钟共8块命令牌 一次消耗3块命令牌
 				time.Sleep(time.Second * 1)
-				ctx.SendChain(message.Text("请不要戳", nickname, " >_<"))
+				ctx.SendChain(message.Text("请把你的手从", nickname, "的木内上拿开😡"))
 			case poke.Load(ctx.Event.GroupID).Acquire():
 				// 5分钟共8块命令牌 一次消耗1块命令牌
 				time.Sleep(time.Second * 1)
-				ctx.SendChain(message.Text("喂(#`O′) 戳", nickname, "干嘛！"))
+				ctx.SendChain(message.Text("你是变态吧😅"))
 			default:
 				// 频繁触发，不回复
 			}

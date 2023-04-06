@@ -17,7 +17,7 @@ var sm syncx.Map[int64, string]
 
 func init() {
 	engine := control.Register("breakrepeat", &ctrl.Options[*zero.Ctx]{
-		DisableOnDefault: false,
+		DisableOnDefault: true,
 		Brief:            "打断复读",
 		Help:             "- 打断" + strconv.Itoa(throttle) + "次以上复读\n",
 	})
