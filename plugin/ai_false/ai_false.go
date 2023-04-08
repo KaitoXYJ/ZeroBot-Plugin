@@ -68,7 +68,7 @@ func init() { // 插件主体
 		ctxext.SetDefaultLimiterManagerParam(time.Duration(m)*time.Second, int(n))
 		logrus.Infoln("设置默认限速为每", m, "秒触发", n, "次")
 	}
-	engine.OnFullMatchGroup([]string{"检查身体", "自检", "启动自检", "系统状态"}, zero.AdminPermission).SetBlock(true).
+	engine.OnFullMatchGroup([]string{"月儿检查身体", "月儿自检", "月儿check", "月儿系统状态"}, zero.SuperUserPermission).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			img, err := drawstatus(ctx.State["manager"].(*ctrl.Control[*zero.Ctx]), ctx.Event.SelfID, zero.BotConfig.NickName[0])
 			if err != nil {
